@@ -1,0 +1,7 @@
+zoo/*
+exp/*
+eval/*
+data/*
+__pycache__
+
+*.swp
