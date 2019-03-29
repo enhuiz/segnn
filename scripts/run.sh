@@ -51,7 +51,7 @@ if [ $stage -le 1 ]; then
 fi
 
 if [ $stage -le 2 ]; then
-    echo "$0: Evalating ..."
+    echo "$0: Evaluating ..."
     pred_dir=$(readlink -f $out_dir/val/)
     cd $data_dir
     python3 -u eval.py --pred-dir $pred_dir
