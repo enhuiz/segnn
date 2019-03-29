@@ -2,7 +2,13 @@
 
 This is the code for comp5421 program assignment 1.
 
-## Run example
+## Install Dependencies
+
+```bash
+$ pip3 install -r requirements.txt
+```
+
+## Run Example
 
 Run the following commands under the project directory.
 
