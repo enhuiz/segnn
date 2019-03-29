@@ -1,10 +1,9 @@
 import os
 import glob
-import random
 
 import cv2
 import numpy as np
-import pandas as pd
+
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
@@ -43,8 +42,8 @@ def resize(image, label, size):
 def random_crop(image, label, size):
     h, w, c = image.shape
     dh, dw = size
-    i = random.randint(0, h - dh)
-    j = random.randint(0, w - dw)
+    i = np.random.randint(0, h - dh)
+    j = np.random.randint(0, w - dw)
     image = image[i:i+dh, j:j+dw]
     label = label[i:i+dh, j:j+dw]
     return image, label
