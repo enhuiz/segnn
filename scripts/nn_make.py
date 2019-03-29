@@ -7,14 +7,15 @@ import torch.nn as nn
 
 from torchvision.models import resnet50, densenet121, resnet18
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+root = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(root)
 
 from segnn.models.zero_nn import ZeroNN
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('out_dir')
+    parser.add_argument('out_dir', default=os.path.join(root, 'zoo'))
     args = parser.parse_args()
     return args
 
@@ -30,6 +31,7 @@ def autosave(f):
     return wrapper
 
 
+# add your model function like this
 @autosave
 def zero_nn():
     """
@@ -41,7 +43,9 @@ def zero_nn():
 
 def main():
     args = get_args()
+    os.makedirs(args.out_dir, exist_ok=True)
 
+    # create your model here
     zero_nn(args.out_dir)
 
 
