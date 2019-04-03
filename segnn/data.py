@@ -42,8 +42,8 @@ def resize(image, label, size):
 def random_crop(image, label, size):
     h, w, c = image.shape
     dh, dw = size
-    i = np.random.randint(0, h - dh)
-    j = np.random.randint(0, w - dw)
+    i = np.random.randint(0, h - dh + 1)
+    j = np.random.randint(0, w - dw + 1)
     image = image[i:i+dh, j:j+dw]
     label = label[i:i+dh, j:j+dw]
     return image, label
@@ -51,14 +51,14 @@ def random_crop(image, label, size):
 
 def random_resized_crop(image, label, size):
     image, label = random_resize(image, label)
-    if image.shape < size:
+    if tuple(image.shape) <= tuple(size):
         image, label = resize(image, label, size)
     image, label = random_crop(image, label, size)
     return image, label
 
 
 class TrainDataset(Dataset):
-    def __init__(self, data_dir, mean, tensor_size, resized=False, mirror=False):
+    def __init__(self, data_dir, mean, tensor_size, resized=True, mirror=True):
         self.mean = mean
         self.tensor_size = tuple(tensor_size)
         self.resized = resized
@@ -132,7 +132,7 @@ def collate_fn(batch):
     return ids, sizes, images, labels
 
 
-def make_train_dl(data_dir, batch_size, mean, tensor_size, resized=False, mirror=False, num_workers=8):
+def make_train_dl(data_dir, batch_size, mean, tensor_size, resized=True, mirror=True, num_workers=8):
     dataset = TrainDataset(data_dir, mean,
                            tensor_size, resized, mirror)
 
