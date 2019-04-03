@@ -1,8 +1,10 @@
+from functools import partial
+
 import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
-from torchvision.models.resnet import ResNet, BasicBlock, Bottleneck
+from torchvision.models import resnet
 
 # from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
 model_urls = {
@@ -14,9 +16,26 @@ model_urls = {
 }
 
 
-class ResNetEncoder(ResNet):
-    def __init__(self, *args):
+def update_dilation(m, dilation):
+    classname = m.__class__.__name__
+    if 'Conv' in classname:
+        if m.stride == (2, 2):
+            m.stride = (1, 1)
+            if m.kernel_size == (3, 3):
+                m.dilation = (dilation//2, dilation//2)
+                m.padding = (dilation//2, dilation//2)
+        else:
+            if m.kernel_size == (3, 3):
+                m.dilation = (dilation, dilation)
+                m.padding = (dilation, dilation)
+
+
+class ResNet(resnet.ResNet):
+    def __init__(self, *args, dilation=0):
         super().__init__(*args)
+        if dilation > 0:
+            self.layer4.apply(partial(update_dilation,
+                                      dilation=dilation))
 
     def forward(self, x):
         conv_out = []
@@ -38,22 +57,15 @@ class ResNetEncoder(ResNet):
         return conv_out
 
 
-def resnet18_encoder(pretrained=False, **kwargs):
-    model = ResNetEncoder(BasicBlock, [2, 2, 2, 2], **kwargs)
+def resnet18(pretrained=False, **kwargs):
+    model = ResNet(resnet.BasicBlock, [2, 2, 2, 2], **kwargs)
     if pretrained:
         model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
     return model
 
 
-def resnet34_encoder(pretrained=False, **kwargs):
-    model = ResNetEncoder(BasicBlock, [3, 4, 6, 3], **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
-    return model
-
-
-def resnet50_encoder(pretrained=False, **kwargs):
-    model = ResNetEncoder(Bottleneck, [3, 4, 6, 3], **kwargs)
+def resnet50(pretrained=False, **kwargs):
+    model = ResNet(resnet.Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
         model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
     return model

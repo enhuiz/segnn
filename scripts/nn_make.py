@@ -8,7 +8,7 @@ import torch.nn as nn
 root = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(root)
 
-from segnn.models.encoder import resnet18_encoder, resnet50_encoder
+from segnn.models.encoder import resnet18, resnet50
 from segnn.models.decoder import PPM
 from segnn.models.end2end import CAN
 
@@ -39,7 +39,7 @@ def autosave(f):
 
 @autosave
 def resnet18_ppm():
-    encoder = resnet18_encoder(True)
+    encoder = resnet18(True)
     decoder = PPM(fc_dim=512)
     model = nn.Sequential(encoder, decoder)
     return model
@@ -47,7 +47,23 @@ def resnet18_ppm():
 
 @autosave
 def resnet50_ppm():
-    encoder = resnet50_encoder(True)
+    encoder = resnet50(True)
+    decoder = PPM(fc_dim=2048)
+    model = nn.Sequential(encoder, decoder)
+    return model
+
+
+@autosave
+def dilated_resnet18_ppm():
+    encoder = resnet18(True, dilation=2)
+    decoder = PPM(fc_dim=512)
+    model = nn.Sequential(encoder, decoder)
+    return model
+
+
+@autosave
+def dilated_resnet50_ppm():
+    encoder = resnet50(True, dilation=2)
     decoder = PPM(fc_dim=2048)
     model = nn.Sequential(encoder, decoder)
     return model
