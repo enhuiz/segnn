@@ -86,6 +86,7 @@ class TrainDataset(Dataset):
 
         image = np.asarray(image, np.float32)
         image -= self.mean
+        image /= 255.0
 
         # h, w, c -> c, h, w
         image = image.transpose([2, 0, 1])
@@ -113,6 +114,7 @@ class TestDataset(Dataset):
 
         image = np.asarray(image, np.float32)
         image -= self.mean
+        image /= 255.0
 
         # h, w, c -> c, h, w
         image = image.transpose([2, 0, 1])
