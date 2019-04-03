@@ -38,7 +38,7 @@ if [ $stage -le 0 ]; then
         --tensor-size $tensor_size \
         --mean $mean \
         --mirror $mirror \
-        --resized $resized
+        --resized $resized || exit 1
 fi
 
 if [ $stage -le 1 ]; then
