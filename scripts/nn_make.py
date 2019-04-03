@@ -5,13 +5,12 @@ import argparse
 import torch
 import torch.nn as nn
 
-from torchvision.models import resnet50, densenet121, resnet18
-
 root = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(root)
 
 from segnn.models.encoder import resnet18_encoder, resnet50_encoder
 from segnn.models.decoder import PPM
+from segnn.models.end2end import CAN
 
 
 def get_args():
@@ -51,6 +50,12 @@ def resnet50_ppm():
     encoder = resnet50_encoder(True)
     decoder = PPM(fc_dim=2048)
     model = nn.Sequential(encoder, decoder)
+    return model
+
+
+@autosave
+def can_ppm():
+    model = CAN(32)
     return model
 
 
