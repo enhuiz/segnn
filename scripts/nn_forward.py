@@ -8,6 +8,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import tqdm
+
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from segnn.data import make_test_dl
@@ -29,7 +31,7 @@ def get_args():
 def forward(model, dl, args):
     os.makedirs(args.out_dir, exist_ok=True)
 
-    for step, (ids, sizes, images, _) in enumerate(dl):
+    for ids, sizes, images, _ in tqdm.tqdm(dl, total=len(dl)):
         images = images.to(args.device)
         with torch.no_grad():
             outputs = model(images)
@@ -43,8 +45,6 @@ def forward(model, dl, args):
             output = torch.argmax(output, dim=1).cpu().numpy()[0]
             path = os.path.join(args.out_dir, '{}.png'.format(id_))
             cv2.imwrite(path, output)
-
-        print('Step [{}/{}]'.format(step + 1, len(dl)))
 
 
 def main():
