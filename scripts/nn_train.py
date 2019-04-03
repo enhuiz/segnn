@@ -37,14 +37,16 @@ def train(model, criterion, optimizer, dl, args):
     os.makedirs(ckpt_dir, exist_ok=True)
 
     for epoch in range(args.epochs):
-        for step, (ids, _, images, labels) in enumerate(dl):
+        for step, (_, _, images, labels) in enumerate(dl):
             images = images.to(args.device)
             labels = labels.long().to(args.device)
-
             outputs = model(images)
-
+            outputs = F.interpolate(outputs,
+                                    size=labels.shape[1:],  # i.e. tensor size
+                                    mode='bilinear',
+                                    align_corners=False)
+            # expect the model output logp
             loss = criterion(outputs, labels)
-
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()

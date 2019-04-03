@@ -3,6 +3,7 @@ device=cpu
 stage=0
 
 data_dir=data/comp5421_TASK2
+zoo_dir=zoo
 model=
 batch_size=32
 epochs=8
@@ -17,7 +18,14 @@ resized=true
 out_dir=exp/$model/
 
 if [ $stage -le 0 ]; then
-    model_path=zoo/$model.pth
+    model_path=$zoo_dir/$model.pth
+    if [ ! -f $model_path ]; then
+        python3 -u scripts/nn_make.py $zoo_dir || exit 1
+        if [ ! -f $model_path ]; then
+            echo "$0: $model_path not found, please implement your model in mknn.py"
+            exit 1
+        fi
+    fi
     echo "$0: Training ..."
     python3 -u scripts/nn_train.py \
         --data-dir $data_dir/train \
@@ -37,9 +45,13 @@ if [ $stage -le 1 ]; then
     # the latest ckpt
     model_path=$(ls -1v $out_dir/train/ckpt/*.pth | tail -1)
 
+    if [ -z $model_path ]; then
+        exit 1
+    fi
+
     for task in val test; do
         echo "$0: Forward $task using $model_path ..."
-        python3 -u scripts/nn_forward.py\
+        python3 -u scripts/nn_forward.py \
             --data-dir $data_dir/$task \
             --out-dir $out_dir/$task \
             --model-path $model_path \

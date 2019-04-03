@@ -36,12 +36,10 @@ def forward(model, dl, args):
 
         for i in range(len(ids)):
             id_, size, output = ids[i], tuple(sizes[i]), outputs[i:i+1]
-
-            output = F.upsample(output,
-                                size=size,
-                                mode='bilinear',
-                                align_corners=True)
-
+            output = F.interpolate(output,
+                                   size=size,
+                                   mode='bilinear',
+                                   align_corners=True)
             output = torch.argmax(output, dim=1).cpu().numpy()[0]
             path = os.path.join(args.out_dir, '{}.png'.format(id_))
             cv2.imwrite(path, output)
