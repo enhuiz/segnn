@@ -54,7 +54,7 @@ def resnet50_ppm():
 
 
 @autosave
-def can_ppm():
+def can():
     model = CAN(32)
     return model
 

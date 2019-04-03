@@ -6,7 +6,7 @@ stage=$2
 [ -z $device ] && device=cpu
 [ -z $stage ] && stage=0
 
-model=can_ppm
+model=can
 data_dir=data/comp5421_TASK2
 batch_size=16
 epochs=10
