@@ -41,25 +41,30 @@ if [ $stage -le 0 ]; then
         --resized $resized || exit 1
 fi
 
-if [ $stage -le 1 ]; then
+forward() {
+    local task=$1
+
     # the latest ckpt
     model_path=$(ls -1v $out_dir/train/ckpt/*.pth | tail -1)
 
     if [ -z $model_path ]; then
+        echo "Error: No model has been trained."
         exit 1
     fi
 
-    for task in val test; do
-        echo "$0: Forward $task using $model_path ..."
-        python3 -u scripts/nn_forward.py \
-            --data-dir $data_dir/$task \
-            --out-dir $out_dir/$task \
-            --model-path $model_path \
-            --device $device \
-            --batch-size 1 \
-            --tensor-size $tensor_size \
-            --mean $mean
-    done
+    echo "$0: Forward $task using $model_path ..."
+    python3 -u scripts/nn_forward.py \
+        --data-dir $data_dir/$task \
+        --out-dir $out_dir/$task \
+        --model-path $model_path \
+        --device $device \
+        --batch-size 1 \
+        --tensor-size $tensor_size \
+        --mean $mean
+}
+
+if [ $stage -le 1 ]; then
+    forward val
 fi
 
 if [ $stage -le 2 ]; then
@@ -68,4 +73,8 @@ if [ $stage -le 2 ]; then
     cd $data_dir
     python3 -u eval.py --pred-dir $pred_dir
     cd -
+fi
+
+if [ $stage -le 3 ]; then
+    forward test
 fi
