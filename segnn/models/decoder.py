@@ -16,16 +16,22 @@ def conv3x3_bn_relu(in_planes, out_planes, stride=1):
     )
 
 
-class C1(nn.Module):
-    def __init__(self, num_class=150, fc_dim=2048):
-        super(C1, self).__init__()
-        self.cbr = conv3x3_bn_relu(fc_dim, fc_dim // 4, 1)
-        self.conv_last = nn.Conv2d(fc_dim // 4, num_class, 1, 1, 0)
+class Deconv(nn.Module):
+    def __init__(self, num_class=7, fc_dim=1024):
+        super().__init__()
+        self.layer = nn.Sequential(
+            nn.ConvTranspose2d(fc_dim, fc_dim//2, 3),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(fc_dim//2, fc_dim//4, 5),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(fc_dim//4, fc_dim//8, 3),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(fc_dim//8, num_class, 2),
+            nn.Tanh())
 
     def forward(self, conv_out):
-        conv5 = conv_out[-1]
-        x = self.cbr(conv5)
-        x = self.conv_last(x)
+        x = conv_out[-1]
+        x = self.layer(x)
         return x
 
 
