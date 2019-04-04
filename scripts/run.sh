@@ -59,7 +59,6 @@ forward() {
         --model-path $model_path \
         --device $device \
         --batch-size 1 \
-        --tensor-size $tensor_size \
         --mean $mean
 }
 

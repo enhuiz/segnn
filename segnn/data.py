@@ -98,9 +98,8 @@ class TrainDataset(Dataset):
 
 
 class TestDataset(Dataset):
-    def __init__(self, data_dir, mean, tensor_size=None):
+    def __init__(self, data_dir, mean):
         self.mean = mean
-        self.tensor_size = tuple(tensor_size)
         self.samples = make_samples(data_dir)
 
     def __getitem__(self, index):
@@ -109,8 +108,6 @@ class TestDataset(Dataset):
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
         size = np.array(image.shape[:2])  # original size
-
-        image, _ = resize(image, None, self.tensor_size)
 
         image = np.asarray(image, np.float32)
         image -= self.mean
@@ -145,8 +142,8 @@ def make_train_dl(data_dir, batch_size, mean, tensor_size, resized=True, mirror=
     return data_loader
 
 
-def make_test_dl(data_dir, batch_size, mean, tensor_size, num_workers=8):
-    dataset = TestDataset(data_dir, mean, tensor_size)
+def make_test_dl(data_dir, batch_size, mean, num_workers=8):
+    dataset = TestDataset(data_dir, mean)
 
     data_loader = DataLoader(dataset,
                              batch_size=batch_size,

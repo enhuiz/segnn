@@ -23,7 +23,6 @@ def get_args():
     parser.add_argument('--device', default='cuda:6')
     parser.add_argument('--batch-size', type=int, default=1)
     parser.add_argument('--mean', type=float, nargs=3)
-    parser.add_argument('--tensor-size', type=int, nargs=2)
     args = parser.parse_args()
     return args
 
@@ -53,8 +52,7 @@ def main():
     model.eval()
     dl = make_test_dl(args.data_dir,
                       args.batch_size,
-                      args.mean,
-                      args.tensor_size)
+                      args.mean)
     forward(model, dl, args)
 
 
