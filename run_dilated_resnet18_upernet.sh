@@ -8,7 +8,7 @@ stage=$2
 
 model=dilated_resnet18_upernet
 data_dir=data/comp5421_TASK2
-batch_size=16
+batch_size=32
 epochs=3
 init_lr=1e-2
 mean="86.95358172 106.59307037 105.14808181"
