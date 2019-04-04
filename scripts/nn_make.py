@@ -9,7 +9,7 @@ root = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(root)
 
 from segnn.models.encoder import resnet18, resnet50
-from segnn.models.decoder import PPM
+from segnn.models.decoder import PPM, UPerNet
 from segnn.models.end2end import CAN
 
 
@@ -27,9 +27,8 @@ def autosave(f):
     def wrapped(out_dir, *args):
         model = f(*args)
         path = os.path.join(out_dir, '{}.pth'.format(f.__name__))
-        if os.path.exists(path):
-            print('{} exists, skip making model.'.format(path))
-        else:
+        if not os.path.exists(path):
+            print('Making model {}.'.format(path))
             torch.save(model, path)
 
     autosave.funcs.append(wrapped)
@@ -70,8 +69,16 @@ def dilated_resnet50_ppm():
 
 
 @autosave
+def dilated_resnet18_upernet():
+    encoder = resnet18(True, dilation=2)
+    decoder = UPerNet(fc_dim=512, fpn_inplanes=(64, 128, 256, 512))
+    model = nn.Sequential(encoder, decoder)
+    return model
+
+
+@autosave
 def can():
-    model = CAN(32)
+    model = CAN(64)
     return model
 
 

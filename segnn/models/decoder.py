@@ -31,9 +31,8 @@ class C1(nn.Module):
 
 class PPM(nn.Module):
     def __init__(self, num_class=7, fc_dim=4096,
-                 use_softmax=False, pool_scales=(1, 2, 3, 6)):
+                 pool_scales=(1, 2, 3, 6)):
         super(PPM, self).__init__()
-        self.use_softmax = use_softmax
 
         self.ppm = []
         for scale in pool_scales:
@@ -54,7 +53,7 @@ class PPM(nn.Module):
             nn.Conv2d(512, num_class, kernel_size=1)
         )
 
-    def forward(self, conv_out, segSize=None):
+    def forward(self, conv_out):
         conv5 = conv_out[-1]
 
         input_size = conv5.size()
