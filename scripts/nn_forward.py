@@ -37,6 +37,7 @@ def forward(model, dl, args):
 
         for i in range(len(ids)):
             id_, size, output = ids[i], tuple(sizes[i]), outputs[i:i+1]
+            output = F.softmax(output, dim=1)
             output = F.interpolate(output,
                                    size=size,
                                    mode='bilinear',
