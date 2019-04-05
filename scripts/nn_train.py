@@ -7,10 +7,11 @@ import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from segnn.data import make_train_dl
+from segnn.data import Task2Dataset
 
 
 def get_args():
@@ -20,14 +21,11 @@ def get_args():
     parser.add_argument('--out-dir')
     parser.add_argument('--device', default='cuda:6')
     parser.add_argument('--epochs', type=int, default=4)
-    parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--init-lr', type=float, default=5e-3)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight-decay', type=float, default=2e-4)
-    parser.add_argument('--tensor-size', type=int, nargs=2)
+    parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--mean', type=float, nargs=3)
-    parser.add_argument('--mirror', type=bool)
-    parser.add_argument('--resized', type=bool)
     args = parser.parse_args()
     return args
 
@@ -37,9 +35,12 @@ def train(model, criterion, optimizer, dl, args):
     os.makedirs(ckpt_dir, exist_ok=True)
 
     for epoch in range(args.epochs):
-        for step, (_, _, images, labels) in enumerate(dl):
+        for step, sample in enumerate(dl):
+            images = sample['image']
+            labels = sample['label']
             images = images.to(args.device)
             labels = labels.long().to(args.device)
+
             outputs = model(images)
             outputs = F.interpolate(outputs,
                                     size=labels.shape[1:],  # i.e. tensor size
@@ -48,8 +49,10 @@ def train(model, criterion, optimizer, dl, args):
             # expect the model output logp
             loss = criterion(outputs, labels)
             loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
+
+            if (step + 1) % args.batch_size == 0:
+                optimizer.step()
+                optimizer.zero_grad()
 
             print('Epoch [{}/{}], Step [{}/{}], Loss: {}'
                   .format(epoch + 1, args.epochs,
@@ -70,8 +73,8 @@ def main():
 
     os.makedirs(args.out_dir, exist_ok=True)
     dump_config(args)
+    print(args)
 
-    print('Loading model {} ...'.format(args.model_path))
     model = torch.load(args.model_path, args.device)
     model.train()
 
@@ -81,14 +84,8 @@ def main():
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
 
-    dl = make_train_dl(args.data_dir,
-                       args.batch_size,
-                       args.mean,
-                       args.tensor_size,
-                       args.resized,
-                       args.mirror)
+    dl = DataLoader(Task2Dataset(args.data_dir, 'train', args.mean))
 
-    print('Start training ...')
     train(model, criterion, optimizer, dl, args)
 
 

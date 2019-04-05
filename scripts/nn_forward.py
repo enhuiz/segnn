@@ -7,12 +7,13 @@ import cv2
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
 
 import tqdm
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from segnn.data import make_test_dl
+from segnn.data import Task2Dataset
 
 
 def get_args():
@@ -30,8 +31,13 @@ def get_args():
 def forward(model, dl, args):
     os.makedirs(args.out_dir, exist_ok=True)
 
-    for ids, sizes, images, _ in tqdm.tqdm(dl, total=len(dl)):
+    for sample in tqdm.tqdm(dl, total=len(dl)):
+        ids = sample['id']
+        sizes = sample['size']
+        images = sample['image']
+
         images = images.to(args.device)
+
         with torch.no_grad():
             outputs = model(images)
 
@@ -51,9 +57,7 @@ def main():
     args = get_args()
     model = torch.load(args.model_path, args.device)
     model.eval()
-    dl = make_test_dl(args.data_dir,
-                      args.batch_size,
-                      args.mean)
+    dl = DataLoader(Task2Dataset(args.data_dir, 'test', args.mean))
     forward(model, dl, args)
 
 

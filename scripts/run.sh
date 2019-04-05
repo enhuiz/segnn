@@ -35,10 +35,7 @@ if [ $stage -le 0 ]; then
         --epochs $epochs \
         --batch-size $batch_size \
         --init-lr $init_lr \
-        --tensor-size $tensor_size \
-        --mean $mean \
-        --mirror $mirror \
-        --resized $resized || exit 1
+        --mean $mean || exit 1
 fi
 
 forward() {
