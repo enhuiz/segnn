@@ -24,30 +24,34 @@ def make_samples(data_dir):
 
 
 class Task2Dataset(Dataset):
-    def __init__(self, data_dir, mode, mean):
+    def __init__(self, data_dir, mode, mean, input_size=None):
         self.mean = mean
         self.mode = mode
+        self.input_size = input_size
         self.samples = make_samples(data_dir)
 
-    def train_transform(self, x):
-        return transforms.Compose([
+        self.train_transform = transforms.Compose([
             transforms.Normalize(mean=self.mean, std=(1, 1, 1)),
+            transforms.RandomResizedCrop(self.input_size),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-        ])(x)
+        ])
 
-    def test_transform(self, x):
-        return transforms.Compose([
+        self.test_transform = transforms.Compose([
             transforms.Normalize(mean=self.mean, std=(1, 1, 1)),
+            transforms.Resize(self.input_size),
             transforms.ToTensor(),
-        ])(x)
+        ])
 
     def __getitem__(self, index):
         image_path, label_path = self.samples[index]
 
         id_ = parse_id(image_path)
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-        label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
+        if label_path:
+            label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
+        else:
+            label = np.zeros_like(image)
         size = np.array(image.shape[:2])
 
         sample = {
