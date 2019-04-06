@@ -25,10 +25,16 @@ def get_args():
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight-decay', type=float, default=2e-4)
     parser.add_argument('--input-size', type=int, nargs=2)
+    parser.add_argument('--input-size-scales', type=float, nargs='+')
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--mean', type=float, nargs=3)
     args = parser.parse_args()
     return args
+
+
+def augment_sizes(size, scales=[0.5, 0.75, 1]):
+    return [(int(size[0] * scale), int(size[1] * scale))
+            for scale in scales]
 
 
 def train(model, criterion, optimizer, dl, args):
@@ -42,15 +48,20 @@ def train(model, criterion, optimizer, dl, args):
             images = images.to(args.device)
             labels = labels.to(args.device)
 
-            outputs = model(images)
-            outputs = F.interpolate(outputs,
-                                    size=labels.shape[1:],  # i.e. tensor size
-                                    mode='bilinear',
-                                    align_corners=False)
+            for input_size in augment_sizes(args.input_size, args.input_size_scales):
+                resized_images = F.interpolate(images,
+                                               size=input_size,
+                                               mode='bilinear',
+                                               align_corners=True)
+                outputs = model(resized_images)
+                outputs = F.interpolate(outputs,
+                                        size=labels.shape[1:],
+                                        mode='bilinear',
+                                        align_corners=False)
+                # expect the model output logp
+                loss = criterion(outputs, labels)
+                loss.backward()
 
-            # expect the model output logp
-            loss = criterion(outputs, labels)
-            loss.backward()
             optimizer.step()
             optimizer.zero_grad()
 

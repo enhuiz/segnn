@@ -22,40 +22,55 @@ def get_args():
     parser.add_argument('--model-path')
     parser.add_argument('--out-dir')
     parser.add_argument('--device', default='cuda:6')
-    parser.add_argument('--batch-size', type=int, default=1)
     parser.add_argument('--input-size', type=int, nargs=2)
+    parser.add_argument('--input-size-scales', type=float, nargs='+')
     parser.add_argument('--mean', type=float, nargs=3)
     args = parser.parse_args()
     return args
+
+
+def augment_sizes(size, scales=[0.5, 0.75, 1]):
+    return [(int(size[0] * scale), int(size[1] * scale))
+            for scale in scales]
 
 
 def forward(model, dl, args):
     os.makedirs(args.out_dir, exist_ok=True)
 
     for sample in tqdm.tqdm(dl, total=len(dl)):
-        ids = sample['id']
-        sizes = sample['size']
-        images = sample['image']
+        for i in range(len(sample['id'])):
+            id_ = sample['id'][i]
+            size = sample['size'][i]
+            images = sample['image'][i:i+1]
 
-        images = images.to(args.device)
+            images = images.to(args.device)
 
-        with torch.no_grad():
-            outputs = model(images)
+            outputs_list = []
+            for input_size in augment_sizes(args.input_size, args.input_size_scales):
+                resized_images = F.interpolate(images,
+                                               size=input_size,
+                                               mode='bilinear',
+                                               align_corners=True)
+                with torch.no_grad():
+                    outputs = model(resized_images)
+                outputs = F.softmax(outputs, dim=1)
+                outputs = F.interpolate(outputs,
+                                        size=tuple(size),
+                                        mode='bilinear',
+                                        align_corners=True)
+                outputs_list.append(outputs)
 
-        for i in range(len(ids)):
-            id_, size, output = ids[i], tuple(sizes[i]), outputs[i:i+1]
-            output = F.softmax(output, dim=1)
-            output = F.interpolate(output,
-                                   size=size,
-                                   mode='bilinear',
-                                   align_corners=True)
-            output = torch.argmax(output, dim=1).cpu().numpy()[0]
+            probs = torch.cat(outputs_list, dim=0).mean(dim=0)
+            pred = torch.argmax(probs, dim=0).cpu().numpy()
+
             path = os.path.join(args.out_dir, '{}.png'.format(id_))
-            cv2.imwrite(path, output)
+            cv2.imwrite(path, pred)
 
 
 def main():
     args = get_args()
+    print(args)
+
     model = torch.load(args.model_path, args.device)
     model.eval()
     dl = DataLoader(Task2Dataset(args.data_dir, 'test',
