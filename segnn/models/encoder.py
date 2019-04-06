@@ -16,26 +16,26 @@ model_urls = {
 }
 
 
-def update_dilation(m, dilation):
-    classname = m.__class__.__name__
-    if 'Conv' in classname:
-        if m.stride == (2, 2):
-            m.stride = (1, 1)
-            if m.kernel_size == (3, 3):
-                m.dilation = (dilation//2, dilation//2)
-                m.padding = (dilation//2, dilation//2)
-        else:
-            if m.kernel_size == (3, 3):
-                m.dilation = (dilation, dilation)
-                m.padding = (dilation, dilation)
-
-
 class ResNet(resnet.ResNet):
-    def __init__(self, *args, dilation=0):
+    def __init__(self, *args, dilation=True):
         super().__init__(*args)
-        if dilation > 0:
-            self.layer4.apply(partial(update_dilation,
-                                      dilation=dilation))
+        if dilation:
+            self.layer3.apply(partial(self.set_dilation, dilation=2))
+            self.layer4.apply(partial(self.set_dilation, dilation=4))
+
+    @staticmethod
+    def set_dilation(m, dilation):
+        classname = m.__class__.__name__
+        if 'Conv' in classname:
+            if m.stride == (2, 2):
+                m.stride = (1, 1)
+                if m.kernel_size == (3, 3):
+                    m.dilation = (dilation//2, dilation//2)
+                    m.padding = (dilation//2, dilation//2)
+            else:
+                if m.kernel_size == (3, 3):
+                    m.dilation = (dilation, dilation)
+                    m.padding = (dilation, dilation)
 
     def forward(self, x):
         conv_out = []
