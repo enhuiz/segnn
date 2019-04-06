@@ -55,8 +55,7 @@ class RandomHorizontalFlip(object):
 
         if random.random() < 0.5:
             img = img[:, ::-1].copy()
-            if mask is not None:
-                mask = mask[:, ::-1].copy()
+            mask = mask[:, ::-1].copy()
 
         sample['image'] = img
         sample['label'] = mask
@@ -85,9 +84,9 @@ class RandomResizedCrop(object):
         i, j, h, w = self.get_params(img)
 
         img = img[i:i+h, j:j+w]
-        img = cv2.resize(img, self.size, interpolation=cv2.INTER_LINEAR)
-
         mask = mask[i:i+h, j:j+w]
+        
+        img = cv2.resize(img, self.size, interpolation=cv2.INTER_LINEAR)
         mask = cv2.resize(mask, self.size, interpolation=cv2.INTER_NEAREST)
 
         sample['image'] = img
