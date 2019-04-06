@@ -12,7 +12,7 @@ batch_size=32
 epochs=3
 init_lr=1e-2
 mean="86.95358172 106.59307037 105.14808181"
-tensor_size="224 224"
+input_size="331 331"
 mirror=true
 resized=true
 
@@ -25,6 +25,6 @@ resized=true
     --epochs $epochs \
     --init-lr $init_lr \
     --mean "$mean" \
-    --tensor-size "$tensor_size" \
+    --input-size "$input_size" \
     --mirror $mirror \
     --resized $resized

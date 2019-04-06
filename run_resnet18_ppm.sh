@@ -9,14 +9,12 @@ stage=$2
 model=resnet18_ppm
 data_dir=data/comp5421_TASK2
 batch_size=32
-epochs=1
+epochs=3
 init_lr=1e-2
-mean="128 128 128"
-tensor_size="224 224"
+mean="86.95358172 106.59307037 105.14808181"
+input_size="600 600"
 mirror=true
 resized=true
-
-# parameters end
 
 ./scripts/run.sh \
     --device $device \
@@ -27,6 +25,6 @@ resized=true
     --epochs $epochs \
     --init-lr $init_lr \
     --mean "$mean" \
-    --tensor-size "$tensor_size" \
+    --input-size "$input_size" \
     --mirror $mirror \
     --resized $resized

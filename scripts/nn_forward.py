@@ -23,6 +23,7 @@ def get_args():
     parser.add_argument('--out-dir')
     parser.add_argument('--device', default='cuda:6')
     parser.add_argument('--batch-size', type=int, default=1)
+    parser.add_argument('--input-size', type=int, nargs=2)
     parser.add_argument('--mean', type=float, nargs=3)
     args = parser.parse_args()
     return args
@@ -57,7 +58,8 @@ def main():
     args = get_args()
     model = torch.load(args.model_path, args.device)
     model.eval()
-    dl = DataLoader(Task2Dataset(args.data_dir, 'test', args.mean))
+    dl = DataLoader(Task2Dataset(args.data_dir, 'test',
+                                 args.mean, args.input_size))
     forward(model, dl, args)
 
 

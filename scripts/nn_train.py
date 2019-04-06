@@ -24,6 +24,7 @@ def get_args():
     parser.add_argument('--init-lr', type=float, default=5e-3)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight-decay', type=float, default=2e-4)
+    parser.add_argument('--input-size', type=int, nargs=2)
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--mean', type=float, nargs=3)
     args = parser.parse_args()
@@ -39,20 +40,19 @@ def train(model, criterion, optimizer, dl, args):
             images = sample['image']
             labels = sample['label']
             images = images.to(args.device)
-            labels = labels.long().to(args.device)
+            labels = labels.to(args.device)
 
             outputs = model(images)
             outputs = F.interpolate(outputs,
                                     size=labels.shape[1:],  # i.e. tensor size
                                     mode='bilinear',
                                     align_corners=False)
+
             # expect the model output logp
             loss = criterion(outputs, labels)
             loss.backward()
-
-            if (step + 1) % args.batch_size == 0:
-                optimizer.step()
-                optimizer.zero_grad()
+            optimizer.step()
+            optimizer.zero_grad()
 
             print('Epoch [{}/{}], Step [{}/{}], Loss: {}'
                   .format(epoch + 1, args.epochs,
@@ -84,7 +84,10 @@ def main():
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
 
-    dl = DataLoader(Task2Dataset(args.data_dir, 'train', args.mean))
+    dl = DataLoader(Task2Dataset(args.data_dir, 'train',
+                                 args.mean, args.input_size),
+                    batch_size=args.batch_size,
+                    shuffle=True)
 
     train(model, criterion, optimizer, dl, args)
 

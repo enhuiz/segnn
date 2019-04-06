@@ -9,9 +9,7 @@ batch_size=32
 epochs=8
 init_lr=1e-2
 mean="128 128 128"
-tensor_size="321 321"
-mirror=true
-resized=true
+input_size="400 300"
 
 . ./scripts/parse_options.sh
 
@@ -29,10 +27,11 @@ if [ $stage -le 0 ]; then
     echo "$0: Training ..."
     python3 -u scripts/nn_train.py \
         --data-dir $data_dir/train \
-        --out-dir $out_dir/train \
+        --out-dir $out_dir \
         --model-path $model_path \
         --device $device \
         --epochs $epochs \
+        --input-size $input_size \
         --batch-size $batch_size \
         --init-lr $init_lr \
         --mean $mean || exit 1
@@ -42,7 +41,7 @@ forward() {
     local task=$1
 
     # the latest ckpt
-    model_path=$(ls -1v $out_dir/train/ckpt/*.pth | tail -1)
+    model_path=$(ls -1v $out_dir/ckpt/*.pth | tail -1)
 
     if [ -z $model_path ]; then
         echo "Error: No model has been trained."
@@ -54,6 +53,7 @@ forward() {
         --data-dir $data_dir/$task \
         --out-dir $out_dir/$task \
         --model-path $model_path \
+        --input-size $input_size \
         --device $device \
         --batch-size 1 \
         --mean $mean
