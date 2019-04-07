@@ -9,7 +9,8 @@ batch_size=32
 epochs=8
 init_lr=1e-2
 mean="128 128 128"
-input_size="400 300"
+input_height="400 300"
+input_ratio="0.75 0.66"
 
 . ./scripts/parse_options.sh
 
@@ -31,7 +32,8 @@ if [ $stage -le 0 ]; then
         --model-path $model_path \
         --device $device \
         --epochs $epochs \
-        --input-size $input_size \
+        --input-height $input_height \
+        --input-ratio $input_ratio \
         --batch-size $batch_size \
         --init-lr $init_lr \
         --mean $mean || exit 1
@@ -53,9 +55,9 @@ forward() {
         --data-dir $data_dir/$task \
         --out-dir $out_dir/$task \
         --model-path $model_path \
-        --input-size $input_size \
+        --input-height $input_height \
+        --input-ratio $input_ratio \
         --device $device \
-        --batch-size 1 \
         --mean $mean
 }
 

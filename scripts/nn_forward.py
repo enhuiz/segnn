@@ -22,16 +22,15 @@ def get_args():
     parser.add_argument('--model-path')
     parser.add_argument('--out-dir')
     parser.add_argument('--device', default='cuda:6')
-    parser.add_argument('--input-size', type=int, nargs=2)
-    parser.add_argument('--input-size-scales', type=float, nargs='+')
+    parser.add_argument('--input-height', type=int, nargs='+')
+    parser.add_argument('--input-ratio', type=float, nargs='+')
     parser.add_argument('--mean', type=float, nargs=3)
     args = parser.parse_args()
     return args
 
 
-def augment_sizes(size, scales=[0.5, 0.75, 1]):
-    return [(int(size[0] * scale), int(size[1] * scale))
-            for scale in scales]
+def augment_sizes(heights, ratios):
+    return [(h, int(h / ratio)) for h in heights for ratio in ratios]
 
 
 def forward(model, dl, args):
@@ -46,9 +45,9 @@ def forward(model, dl, args):
             images = images.to(args.device)
 
             outputs_list = []
-            for input_size in augment_sizes(args.input_size, args.input_size_scales):
+            for input_height in augment_sizes(args.input_height, args.input_ratio):
                 resized_images = F.interpolate(images,
-                                               size=input_size,
+                                               size=input_height,
                                                mode='bilinear',
                                                align_corners=True)
                 with torch.no_grad():
@@ -73,8 +72,13 @@ def main():
 
     model = torch.load(args.model_path, args.device)
     model.eval()
+
+    max_input_height = max(args.input_height)
+    input_shape = (max_input_height,
+                   int(max_input_height / args.input_ratio[0]))
+
     dl = DataLoader(Task2Dataset(args.data_dir, 'test',
-                                 args.mean, args.input_size))
+                                 args.mean, input_shape))
     forward(model, dl, args)
 
 
