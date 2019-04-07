@@ -24,10 +24,10 @@ def autosave(f):
         autosave.funcs = []
 
     def wrapped(out_dir, *args):
-        model = f(*args)
         path = os.path.join(out_dir, '{}.pth'.format(f.__name__))
         if not os.path.exists(path):
             print('Making model {}.'.format(path))
+            model = f(*args)
             torch.save(model, path)
 
     autosave.funcs.append(wrapped)
