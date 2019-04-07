@@ -74,6 +74,20 @@ $  python3 scripts/visualize_mask.py data/comp5421_TASK2/val/images  exp/dilated
 
 ![validation example](fig/exp_001699.png)
 
+where
+
+```json
+{
+  "unknown": "black",
+  "water": "blue",
+  "sky": "white",
+  "road": "grey",
+  "building": "orange",
+  "vegetation": "green",
+  "ground": "brown"
+}
+```
+
 #### mIoU
 
 ```python
