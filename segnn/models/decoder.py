@@ -16,25 +16,6 @@ def conv3x3_bn_relu(in_planes, out_planes, stride=1):
     )
 
 
-class Deconv(nn.Module):
-    def __init__(self, num_class=7, fc_dim=1024):
-        super().__init__()
-        self.layer = nn.Sequential(
-            nn.ConvTranspose2d(fc_dim, fc_dim//2, 3),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(fc_dim//2, fc_dim//4, 5),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(fc_dim//4, fc_dim//8, 3),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(fc_dim//8, num_class, 2),
-            nn.Tanh())
-
-    def forward(self, conv_out):
-        x = conv_out[-1]
-        x = self.layer(x)
-        return x
-
-
 class PPM(nn.Module):
     def __init__(self, num_class=7, fc_dim=4096,
                  pool_scales=(1, 2, 3, 6)):
@@ -138,8 +119,10 @@ class UPerNet(nn.Module):
             conv_x = conv_out[i]
             conv_x = self.fpn_in[i](conv_x)  # lateral branch
 
-            f = nn.functional.interpolate(
-                f, size=conv_x.size()[2:], mode='bilinear', align_corners=False)  # top-down branch
+            f = nn.functional.interpolate(f,
+                                          size=conv_x.size()[2:],
+                                          mode='bilinear',
+                                          align_corners=False)  # top-down branch
             f = conv_x + f
 
             fpn_feature_list.append(self.fpn_out[i](f))
@@ -147,11 +130,13 @@ class UPerNet(nn.Module):
         fpn_feature_list.reverse()  # [P2 - P5]
         output_size = fpn_feature_list[0].size()[2:]
         fusion_list = [fpn_feature_list[0]]
+
         for i in range(1, len(fpn_feature_list)):
             fusion_list.append(nn.functional.interpolate(
                 fpn_feature_list[i],
                 output_size,
                 mode='bilinear', align_corners=False))
+
         fusion_out = torch.cat(fusion_list, 1)
         x = self.conv_last(fusion_out)
 
