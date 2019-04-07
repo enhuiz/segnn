@@ -22,15 +22,10 @@ def get_args():
     parser.add_argument('--model-path')
     parser.add_argument('--out-dir')
     parser.add_argument('--device', default='cuda:6')
-    parser.add_argument('--input-height', type=int, nargs='+')
-    parser.add_argument('--input-ratio', type=float, nargs='+')
+    parser.add_argument('--input-size', type=int, nargs=2)
     parser.add_argument('--mean', type=float, nargs=3)
     args = parser.parse_args()
     return args
-
-
-def augment_sizes(heights, ratios):
-    return [(h, int(h / ratio)) for h in heights for ratio in ratios]
 
 
 def forward(model, dl, args):
@@ -39,29 +34,17 @@ def forward(model, dl, args):
     for sample in tqdm.tqdm(dl, total=len(dl)):
         for i in range(len(sample['id'])):
             id_ = sample['id'][i]
-            size = sample['size'][i]
+            shape = sample['shape'][i]
             images = sample['image'][i:i+1]
-
             images = images.to(args.device)
-
-            outputs_list = []
-            for input_height in augment_sizes(args.input_height, args.input_ratio):
-                resized_images = F.interpolate(images,
-                                               size=input_height,
-                                               mode='bilinear',
-                                               align_corners=True)
-                with torch.no_grad():
-                    outputs = model(resized_images)
-                outputs = F.softmax(outputs, dim=1)
-                outputs = F.interpolate(outputs,
-                                        size=tuple(size),
-                                        mode='bilinear',
-                                        align_corners=True)
-                outputs_list.append(outputs)
-
-            probs = torch.cat(outputs_list, dim=0).mean(dim=0)
-            pred = torch.argmax(probs, dim=0).cpu().numpy()
-
+            with torch.no_grad():
+                outputs = model(images)
+            probs = F.softmax(outputs, dim=1)
+            probs = F.interpolate(probs,
+                                  size=tuple(shape),
+                                  mode='bilinear',
+                                  align_corners=True)
+            pred = torch.argmax(probs[0], dim=0).cpu().numpy()
             path = os.path.join(args.out_dir, '{}.png'.format(id_))
             cv2.imwrite(path, pred)
 
@@ -73,12 +56,8 @@ def main():
     model = torch.load(args.model_path, args.device)
     model.eval()
 
-    max_input_height = max(args.input_height)
-    input_shape = (max_input_height,
-                   int(max_input_height / args.input_ratio[0]))
-
     dl = DataLoader(Task2Dataset(args.data_dir, 'test',
-                                 args.mean, input_shape))
+                                 args.mean, args.input_size))
     forward(model, dl, args)
 
 

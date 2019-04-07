@@ -31,10 +31,8 @@ class Task2Dataset(Dataset):
         self.samples = make_samples(data_dir)
 
         self.train_transform = transforms.Compose([
-            transforms.Padding(),
-            transforms.RandomResizedCrop(self.input_size),
+            transforms.Resize(self.input_size),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomGaussianBlur(),
             transforms.Normalize(mean=self.mean, std=(1, 1, 1)),
             transforms.ToTensor(),
         ])
@@ -54,13 +52,14 @@ class Task2Dataset(Dataset):
             label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
         else:
             label = np.zeros_like(image)
-        size = np.array(image.shape[:2])
+
+        shape = np.array(image.shape[:2])
 
         sample = {
             'id': id_,
             'image': image,
             'label': label,
-            'size': size,
+            'shape': shape,  # height, width
         }
 
         if self.mode == 'train':

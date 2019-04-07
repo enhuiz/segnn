@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import sys
 
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -24,16 +25,11 @@ def get_args():
     parser.add_argument('--init-lr', type=float, default=5e-3)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--weight-decay', type=float, default=2e-4)
-    parser.add_argument('--input-height', type=int, nargs='+')
-    parser.add_argument('--input-ratio', type=float, nargs='+')
+    parser.add_argument('--input-size', type=int, nargs=2)
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--mean', type=float, nargs=3)
     args = parser.parse_args()
     return args
-
-
-def augment_sizes(heights, ratios):
-    return [(h, int(h / ratio)) for h in heights for ratio in ratios]
 
 
 def train(model, criterion, optimizer, dl, args):
@@ -44,22 +40,18 @@ def train(model, criterion, optimizer, dl, args):
         for step, sample in enumerate(dl):
             images = sample['image']
             labels = sample['label']
+
             images = images.to(args.device)
             labels = labels.to(args.device)
+            outputs = model(images)
+            outputs = F.interpolate(outputs,
+                                    size=labels.shape[1:],
+                                    mode='bilinear',
+                                    align_corners=False)
 
-            for input_height in augment_sizes(args.input_height, args.input_ratio):
-                resized_images = F.interpolate(images,
-                                               size=input_height,
-                                               mode='bilinear',
-                                               align_corners=True)
-                outputs = model(resized_images)
-                outputs = F.interpolate(outputs,
-                                        size=labels.shape[1:],
-                                        mode='bilinear',
-                                        align_corners=False)
-                # expect the model output logp
-                loss = criterion(outputs, labels)
-                loss.backward()
+            # expect the model output logp
+            loss = criterion(outputs, labels)
+            loss.backward()
 
             optimizer.step()
             optimizer.zero_grad()
@@ -94,12 +86,8 @@ def main():
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
 
-    max_input_height = max(args.input_height)
-    input_shape = (max_input_height,
-                   int(max_input_height / args.input_ratio[0]))
-
     dl = DataLoader(Task2Dataset(args.data_dir, 'train',
-                                 args.mean, input_shape),
+                                 args.mean, args.input_size),
                     batch_size=args.batch_size,
                     shuffle=True)
 

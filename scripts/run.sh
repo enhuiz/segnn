@@ -9,8 +9,7 @@ batch_size=32
 epochs=8
 init_lr=1e-2
 mean="128 128 128"
-input_height="400 300"
-input_ratio="0.75 0.66"
+input_size="331 331"
 
 . ./scripts/parse_options.sh
 
@@ -32,8 +31,7 @@ if [ $stage -le 0 ]; then
         --model-path $model_path \
         --device $device \
         --epochs $epochs \
-        --input-height $input_height \
-        --input-ratio $input_ratio \
+        --input-size $input_size \
         --batch-size $batch_size \
         --init-lr $init_lr \
         --mean $mean || exit 1
@@ -55,8 +53,7 @@ forward() {
         --data-dir $data_dir/$task \
         --out-dir $out_dir/$task \
         --model-path $model_path \
-        --input-height $input_height \
-        --input-ratio $input_ratio \
+        --input-size $input_size \
         --device $device \
         --mean $mean
 }
@@ -70,7 +67,7 @@ if [ $stage -le 2 ]; then
     pred_dir=$(readlink -f $out_dir/val/)
     cd $data_dir
     python3 -u eval.py --pred-dir $pred_dir
-    cd -
+    cd - > /dev/null
 fi
 
 if [ $stage -le 3 ]; then

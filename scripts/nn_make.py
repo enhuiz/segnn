@@ -8,9 +8,8 @@ import torch.nn as nn
 root = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(root)
 
-from segnn.models.encoder import resnet18, resnet50
-from segnn.models.decoder import PPM, UPerNet, Deconv
-from segnn.models.end2end import CAN
+from segnn.models.encoder import resnet18
+from segnn.models.decoder import PPM, UPerNet
 
 
 def get_args():
@@ -45,25 +44,9 @@ def resnet18_ppm():
 
 
 @autosave
-def resnet50_ppm():
-    encoder = resnet50(True)
-    decoder = PPM(fc_dim=2048)
-    model = nn.Sequential(encoder, decoder)
-    return model
-
-
-@autosave
 def dilated_resnet18_ppm():
     encoder = resnet18(True, dilation=2)
     decoder = PPM(fc_dim=512)
-    model = nn.Sequential(encoder, decoder)
-    return model
-
-
-@autosave
-def dilated_resnet50_ppm():
-    encoder = resnet50(True, dilation=2)
-    decoder = PPM(fc_dim=2048)
     model = nn.Sequential(encoder, decoder)
     return model
 
@@ -73,20 +56,6 @@ def dilated_resnet18_upernet():
     encoder = resnet18(True, dilation=2)
     decoder = UPerNet(fc_dim=512, fpn_inplanes=(64, 128, 256, 512))
     model = nn.Sequential(encoder, decoder)
-    return model
-
-
-@autosave
-def dilated_resnet18_deconv():
-    encoder = resnet18(True, dilation=2)
-    decoder = Deconv(fc_dim=512)
-    model = nn.Sequential(encoder, decoder)
-    return model
-
-
-@autosave
-def can():
-    model = CAN(64)
     return model
 
 
