@@ -66,8 +66,10 @@ if [ $stage -le 2 ]; then
     echo "$0: Evaluating ..."
     pred_dir=$(readlink -f $out_dir/val/)
     cd $data_dir
-    python3 -u eval.py --pred-dir $pred_dir
-    cd - > /dev/null
+    iou=$(python3 -u eval.py --pred-dir $pred_dir)
+    cd - >/dev/null
+    echo $iou >$out_dir/iou.txt
+    echo $iou
 fi
 
 if [ $stage -le 3 ]; then
