@@ -64,9 +64,9 @@ Then run the `.sh`, you result will be automatically output to the exp/ and stdo
 
 ## Result
 
-## Validation
+### Validation
 
-### Example
+#### Example
 
 ```bash
 $  python3 scripts/visualize_mask.py data/comp5421_TASK2/val/images  exp/dilated_resnet18_upernet_refine/val visual/refine/val
@@ -74,15 +74,15 @@ $  python3 scripts/visualize_mask.py data/comp5421_TASK2/val/images  exp/dilated
 
 ![validation example](fig/exp_001699.png)
 
-### mIoU
+#### mIoU
 
 ```python
 {'meanIoU': 0.5122276750329822, 'IoU_array': array([0.24294965, 0.87237296, 0. , 0.53663633, 0.83179963, 0.71088077, 0.39095439])}
 ```
 
-## Test
+### Test
 
-### Example
+#### Example
 
 ```bash
 $ python3 scripts/visualize_mask.py data/comp5421_TASK2/test/images exp/dilated_resnet18_upernet_refine/test visual/refine/test
