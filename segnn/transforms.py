@@ -95,21 +95,21 @@ class RandomResizedCrop(object):
 
     def get_params(self, img):
         h, w, _ = img.shape
-        ratio = random.uniform(*self.scale)
-        dh = int(ratio * h)
-        dw = int(ratio * w)
+        scale = random.uniform(*self.scale)
+        dh = int(scale * h)
+        dw = int(scale * w)
         i = random.randint(0, h - dh)
         j = random.randint(0, w - dw)
-        return i, j, h, w
+        return i, j, dh, dw
 
     def __call__(self, sample):
         img = sample['image']
         mask = sample['label']
 
-        i, j, h, w = self.get_params(img)
+        i, j, dh, dw = self.get_params(img)
 
-        img = img[i:i+h, j:j+w]
-        mask = mask[i:i+h, j:j+w]
+        img = img[i:i+dh, j:j+dw]
+        mask = mask[i:i+dh, j:j+dw]
 
         img = cv2.resize(img, self.size, interpolation=cv2.INTER_LINEAR)
         mask = cv2.resize(mask, self.size, interpolation=cv2.INTER_NEAREST)
