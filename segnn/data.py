@@ -31,15 +31,17 @@ class Task2Dataset(Dataset):
         self.samples = make_samples(data_dir)
 
         self.train_transform = transforms.Compose([
-            transforms.Normalize(mean=self.mean, std=(1, 1, 1)),
+            transforms.Padding(),
             transforms.RandomResizedCrop(self.input_size),
             transforms.RandomHorizontalFlip(),
+            transforms.RandomGaussianBlur(),
+            transforms.Normalize(mean=self.mean, std=(1, 1, 1)),
             transforms.ToTensor(),
         ])
 
         self.test_transform = transforms.Compose([
-            transforms.Normalize(mean=self.mean, std=(1, 1, 1)),
             transforms.Resize(self.input_size),
+            transforms.Normalize(mean=self.mean, std=(1, 1, 1)),
             transforms.ToTensor(),
         ])
 
