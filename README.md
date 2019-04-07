@@ -13,19 +13,18 @@ $ pip3 install -r requirements.txt
 Run the following commands under the project directory.
 
 ```bash
-$ python3 scripts/nn_make.py
-$ ./run_zero_nn.sh
+./run_dilated_resnet18_upernet.sh
 ```
 
 ## Create Your Own Model
 
 Steps to add a model (let's call it MyNN):
 
-1. Create you mynn.py under `segnn/models/mynn.py` and finish design it.
+1. Create you `MyNNEncoder` in `segnn/models/encoder.py` and `MyNNDecoder` in `segnn/models/decoder.py`.
 2. Change `scripts/nn_make.py`, create you way to initialize the model.
 3. Create `run_my_nn.sh`.
 
-Then just run the previous steps, you result will be automatically output to the exp/ and stdout.
+Then run the `.sh`, you result will be automatically output to the exp/ and stdout.
 
 ## Directories
 
@@ -34,27 +33,59 @@ Then just run the previous steps, you result will be automatically output to the
 ├── data
 │   └── comp5421_TASK2          <- data folder
 ├── exp                         <- experiment result, output of the scripts
-│   └── zero_nn
+│   └── mynn
 │       ├── test                <- predicted labels for test
-│       ├── train               
+│       ├── ckpt
 │       │   ├── ckpt            <- pytorch .pth checkpoints, will be used to predict test/val
 │       │   └── config.json     <- backup training configuration in json format
+│       │   └── iou.txt         <- iou of val/
 │       └── val                 <- predicted labels for val
 ├── requirements.txt
-├── run_zero_nn.sh              <- one sample model, an example
+├── run_my_nn.sh                <- executor, unix-based system required
 ├── scripts
 │   ├── nn_forward.py           <- create labels
 │   ├── nn_make.py              <- make proto .pth model to zoo/, so that nn_train.py can take it and train
 │   ├── nn_train.py             <- train .pth
 │   ├── parse_options.sh        <- shell utils to parse options, like argparse in python
-│   └── run.sh                  <- run train, feedforward and evaluation
+│   ├── run.sh                  <- run train, feedforward and evaluation
+│   └── visualize_mask.sh       <- visualize results
 ├── segnn
-│   ├── data.py                 <- data preprocessing
+│   ├── data.py                 <- data set
 │   ├── __init__.py
 │   ├── models
-│   │   ├── __init__.py
-│   │   └── zero_nn.py          <- an example model, you can design your model like this
+│   │   ├── decoder.py          <- ppm, upernet etc.
+│   │   └── encoder.py          <- resnet etc.
+│   │   └── __init__.py
+│   ├── transforms.py           <- overload pytorch transforms
 │   └── utils.py                <- where you add your utils
 └── zoo                         <- .pth created by nn_make.py
-    └── zero_nn.pth             
+    └── my_nn.pth
 ```
+
+## Result
+
+## Validation
+
+### Example
+
+```bash
+$  python3 scripts/visualize_mask.py data/comp5421_TASK2/val/images  exp/dilated_resnet18_upernet_refine/val visual/refine/val
+```
+
+![validation example](fig/exp_001699.png)
+
+### mIoU
+
+```python
+{'meanIoU': 0.5122276750329822, 'IoU_array': array([0.24294965, 0.87237296, 0. , 0.53663633, 0.83179963, 0.71088077, 0.39095439])}
+```
+
+## Test
+
+### Example
+
+```bash
+$ python3 scripts/visualize_mask.py data/comp5421_TASK2/test/images exp/dilated_resnet18_upernet_refine/test visual/refine/test
+```
+
+![test example](fig/exp_001744.png)
