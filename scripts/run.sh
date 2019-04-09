@@ -64,7 +64,11 @@ fi
 
 if [ $stage -le 2 ]; then
     echo "$0: Evaluating ..."
-    pred_dir=$(readlink -f $out_dir/val/)
+    if [ "$(uname -s)" = 'Linux' ]; then
+        pred_dir=$(readlink -f $out_dir/val/)
+    else
+        pred_dir=$(readlink $out_dir/val/) # macos
+    fi
     cd $data_dir
     iou=$(python3 -u eval.py --pred-dir $pred_dir)
     cd - >/dev/null

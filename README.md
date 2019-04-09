@@ -84,13 +84,13 @@ where
 
 ```json
 {
-  "unknown": "black",
-  "water": "blue",
-  "sky": "white",
-  "road": "grey",
-  "building": "orange",
-  "vegetation": "green",
-  "ground": "brown"
+   "black": "unknown",
+   "blue": "water",
+   "white": "sky",
+   "grey": "road",
+   "orange": "building",
+   "green": "vegetation",
+   "brown: "ground"
 }
 ```
 
