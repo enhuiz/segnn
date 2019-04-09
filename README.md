@@ -8,9 +8,15 @@ This is the code for comp5421 program assignment 1.
 $ pip3 install -r requirements.txt
 ```
 
-## Run Example
+## Run Inference
 
 Run the following commands under the project directory.
+
+```bash
+./eval_best_model.sh
+```
+
+## Run Training
 
 ```bash
 ./run_dilated_resnet18_upernet.sh
